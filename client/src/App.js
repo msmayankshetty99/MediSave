@@ -3,6 +3,7 @@ import Expenses from './Expenses';
 import Dashboard from './Dashboard';
 import React, { useState, useEffect, createContext } from 'react';
 import { BrowserRouter as Router, Route, Routes, NavLink } from 'react-router-dom';
+import { FaHeartbeat } from 'react-icons/fa';
 
 // Create a theme context
 export const ThemeContext = createContext();
@@ -32,19 +33,19 @@ function App() {
           <div className="app-container">
             <nav className="sidenav">
               <div className="sidenav-header">
-                <h2>MediSave</h2>
+                <h2><FaHeartbeat className="medisave-icon" /> MediSave</h2>
               </div>
               <ul className="sidenav-menu">
-                <li>
-                  <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
-                    <span className="nav-icon">📊</span>
-                    Dashboard
-                  </NavLink>
-                </li>
                 <li>
                   <NavLink to="/expenses" className={({ isActive }) => isActive ? "active" : ""}>
                     <span className="nav-icon">💰</span>
                     Expenses
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
+                    <span className="nav-icon">📊</span>
+                    Dashboard
                   </NavLink>
                 </li>
               </ul>
@@ -60,9 +61,9 @@ function App() {
             </nav>
             <main className="main-content">
               <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/" element={<Expenses />} />
                 <Route path="/expenses" element={<Expenses />} />
+                <Route path="/dashboard" element={<Dashboard />} />
               </Routes>
             </main>
           </div>

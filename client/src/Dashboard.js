@@ -197,9 +197,18 @@ function Dashboard() {
           <div className="summary-card total">
             <div className="card-content">
               <h3>Total Expenses</h3>
-              <p className="amount">${selectedCategory === 'all' ? totalAmount.toFixed(2) : filteredAmount.toFixed(2)}</p>
+              <p className="amount">${totalAmount.toFixed(2)}</p>
             </div>
           </div>
+          
+          {selectedCategory !== 'all' && (
+            <div className="summary-card filtered">
+              <div className="card-content">
+                <h3>Filtered Expenses</h3>
+                <p className="amount">${filteredAmount.toFixed(2)}</p>
+              </div>
+            </div>
+          )}
           
           <div className="summary-card count">
             <div className="card-content">
