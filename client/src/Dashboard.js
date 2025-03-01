@@ -7,34 +7,46 @@ import './dashboard.css';
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const axios = require('axios');
+// we should make these environment variables
+const API_KEY = "f671082f5fdbe6488ce24f306baf37a3";
+const ACCOUNT_ID = "67c28e049683f20dd518c023"; //we should update this eventually (make a user have to login)
 
-const API_KEY = 'f671082f5fdbe6488ce24f306baf37a3';  // Replace with your actual Nessie API key
-const ACCOUNT_ID = '67c28e049683f20dd518c023';  // Replace with a valid account ID
+var request = require('superagent');
 
-async function getAccountBalance() {
-  if (!API_KEY || !ACCOUNT_ID) {
-    console.error('Missing API key or account ID. Please check your environment variables.');
-    return null;
-  }
-  console.log("Weeeeeee");
-  try {
-    const response = await axios.get(`http://api.nessieisreal.com/accounts/${ACCOUNT_ID}`, {
-      params: { key: API_KEY }
-    });
+let accountBalance = null;
 
-    const account = response.data;
-    console.log(`Account ID: ${account._id}`);
-    console.log(`Balance: $${account.balance}`);
-    console.log(account)
+request.get(`http://api.nessieisreal.com/customers/${ACCOUNT_ID}/accounts?key=${API_KEY}`)
+  .end(function (err, res) {
+    if (err) {
+      // Log error information to diagnose the issue
+      console.error('Error fetching data:', err);
+      return;
+    }
 
-    return account.balance;
-  } catch (error) {
-    console.error('Error fetching account balance:', error.response?.data || error.message);
-    return null;
-  }
-}
-getAccountBalance();
+    // Check if the response is null or undefined
+    if (!res) {
+      console.error('No response received');
+      return;
+    }
+
+    // Safely check if status is available
+    if (res && res.status) {
+      console.log('Response Status:', res.status);
+    }
+
+    // Handle the response body
+    if (res && res.body) {
+      console.log('Response Body:', res.body);
+      for (let x of res.body) {
+        if (x['nickname'] === 'Health Savings') {
+          console.log(x['balance']);
+          accountBalance = x['balance'];
+        }
+      }
+    } else {
+      console.error('No body in response');
+    }
+  });
 
 function Dashboard() {
   const { theme } = useContext(ThemeContext);
@@ -44,7 +56,6 @@ function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredExpenses, setFilteredExpenses] = useState([]);
   const [filteredAmount, setFilteredAmount] = useState(0);
-  const [accountBalance, setAccountBalance] = useState(null);
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -130,16 +141,6 @@ function Dashboard() {
     setChartData(data);
   }, [expensesList]);
 
-  useEffect(() => {
-    async function fetchBalance() {
-      const balance = await getAccountBalance();
-      if (balance !== null) {
-        setAccountBalance(balance);
-      }
-    }
-    fetchBalance();
-  }, []);
-
   // Format date for display
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -204,6 +205,7 @@ function Dashboard() {
 
   // Sort expenses
   const sortedExpenses = [...filteredExpenses].sort((a, b) => {
+    console.log("test");
     const { key, direction } = sortConfig;
     
     if (key === 'date') {
@@ -260,7 +262,7 @@ function Dashboard() {
           <div className="summary-card total">
             <div className="card-content">
               <h3>Money Saved</h3>
-              <p className="amount">${accountBalance !== null ? `$${accountBalance.toFixed(2)}` : 'Loading...'}</p>
+              <p className="amount">{accountBalance !== null ? `$${accountBalance.toFixed(2)}` : 'Loading...'}</p>
             </div>
           </div>
         </div>
