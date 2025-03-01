@@ -19,23 +19,23 @@
   --danger-hover: #fee2e2;
 }
 
-/* Dark Theme Variables */
+/* Dark Theme Variables - Graphite with Bright Royal Blue accents */
 .dark {
-  --background: #0f172a;
-  --card-background: #1e293b;
-  --form-background: #1e293b;
-  --hover-background: #334155;
-  --active-background: #1e40af;
-  --text-primary: #f8fafc;
-  --text-secondary: #e2e8f0;
-  --text-muted: #94a3b8;
-  --text-light: #f8fafc;
-  --border-color: #334155;
-  --primary-color: #3b82f6;
-  --primary-hover: #60a5fa;
-  --success-color: #10b981;
+  --background: #1c1c1e;
+  --card-background: #2c2c2e;
+  --form-background: #2c2c2e;
+  --hover-background: #3a3a3c;
+  --active-background: #3a3a3c;
+  --text-primary: #f8f8f8;
+  --text-secondary: #d1d1d6;
+  --text-muted: #8e8e93;
+  --text-light: #f8f8f8;
+  --border-color: #38383a;
+  --primary-color: #4285f4;
+  --primary-hover: #5c9fff;
+  --success-color: #30d158;
   --shadow-color: rgba(0, 0, 0, 0.3);
-  --danger-hover: #7f1d1d;
+  --danger-hover: #450a0a;
 }
 
 /* Main container */
