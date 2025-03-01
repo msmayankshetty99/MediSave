@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './expenses.css';
+import ReceiptScanner from './components/ReceiptScanner';
 
 function Expenses() {
   const [expense, setExpense] = useState({
@@ -20,6 +21,7 @@ function Expenses() {
   const [searchTerm, setSearchTerm] = useState('');
   const [totalAmount, setTotalAmount] = useState(0);
   const [showAddExpense, setShowAddExpense] = useState(false);
+  const [showReceiptScanner, setShowReceiptScanner] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
@@ -118,6 +120,7 @@ function Expenses() {
       notes: expense.notes || ''
     });
     setShowAddExpense(true);
+    setShowReceiptScanner(false);
   };
 
   const handleSort = (key) => {
@@ -126,6 +129,27 @@ function Expenses() {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
+  };
+
+  const handleScanReceipt = () => {
+    setShowReceiptScanner(true);
+    setShowAddExpense(false);
+    setEditingExpense(null);
+  };
+
+  const handleScanComplete = (scannedData) => {
+    // Set the expense form with the scanned data
+    setExpense({
+      name: scannedData.name || '',
+      amount: scannedData.amount ? scannedData.amount.toString() : '',
+      category: scannedData.category || 'other',
+      date: scannedData.date || new Date().toISOString().substr(0, 10),
+      notes: scannedData.notes || ''
+    });
+    
+    // Show the expense form with pre-filled data
+    setShowAddExpense(true);
+    setShowReceiptScanner(false);
   };
 
   // Filter and sort expenses
@@ -251,24 +275,40 @@ function Expenses() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <button
-                className="add-expense-button"
-                onClick={() => {
-                  setShowAddExpense(!showAddExpense);
-                  setEditingExpense(null);
-                  setExpense({
-                    name: '',
-                    amount: '',
-                    category: 'medication',
-                    date: new Date().toISOString().substr(0, 10),
-                    notes: ''
-                  });
-                }}
-              >
-                {showAddExpense ? 'Cancel' : 'Add Expense'}
-              </button>
+              <div className="action-buttons">
+                <button
+                  className="scan-receipt-button"
+                  onClick={handleScanReceipt}
+                >
+                  Scan Receipt
+                </button>
+                <button
+                  className="add-expense-button"
+                  onClick={() => {
+                    setShowAddExpense(!showAddExpense);
+                    setShowReceiptScanner(false);
+                    setEditingExpense(null);
+                    setExpense({
+                      name: '',
+                      amount: '',
+                      category: 'medication',
+                      date: new Date().toISOString().substr(0, 10),
+                      notes: ''
+                    });
+                  }}
+                >
+                  {showAddExpense ? 'Cancel' : 'Add Expense'}
+                </button>
+              </div>
             </div>
           </div>
+
+          {showReceiptScanner && (
+            <ReceiptScanner 
+              onScanComplete={handleScanComplete} 
+              onCancel={() => setShowReceiptScanner(false)} 
+            />
+          )}
 
           {showAddExpense && (
             <div className="expense-form-container">
