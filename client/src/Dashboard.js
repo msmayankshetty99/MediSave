@@ -7,6 +7,35 @@ import './dashboard.css';
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const axios = require('axios');
+
+const API_KEY = 'f671082f5fdbe6488ce24f306baf37a3';  // Replace with your actual Nessie API key
+const ACCOUNT_ID = '67c28e049683f20dd518c023';  // Replace with a valid account ID
+
+async function getAccountBalance() {
+  if (!API_KEY || !ACCOUNT_ID) {
+    console.error('Missing API key or account ID. Please check your environment variables.');
+    return null;
+  }
+  console.log("Weeeeeee");
+  try {
+    const response = await axios.get(`http://api.nessieisreal.com/accounts/${ACCOUNT_ID}`, {
+      params: { key: API_KEY }
+    });
+
+    const account = response.data;
+    console.log(`Account ID: ${account._id}`);
+    console.log(`Balance: $${account.balance}`);
+    console.log(account)
+
+    return account.balance;
+  } catch (error) {
+    console.error('Error fetching account balance:', error.response?.data || error.message);
+    return null;
+  }
+}
+getAccountBalance();
+
 function Dashboard() {
   const { theme } = useContext(ThemeContext);
   const [expensesList, setExpensesList] = useState([]);
@@ -15,6 +44,7 @@ function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredExpenses, setFilteredExpenses] = useState([]);
   const [filteredAmount, setFilteredAmount] = useState(0);
+  const [accountBalance, setAccountBalance] = useState(null);
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -99,6 +129,16 @@ function Dashboard() {
 
     setChartData(data);
   }, [expensesList]);
+
+  useEffect(() => {
+    async function fetchBalance() {
+      const balance = await getAccountBalance();
+      if (balance !== null) {
+        setAccountBalance(balance);
+      }
+    }
+    fetchBalance();
+  }, []);
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -205,6 +245,13 @@ function Dashboard() {
             <div className="card-content">
               <h3>Total Records</h3>
               <p className="count-value">{filteredExpenses.length}</p>
+            </div>
+          </div>
+
+          <div className="summary-card total">
+            <div className="card-content">
+              <h3>Money Saved</h3>
+              <p className="amount">${accountBalance !== null ? `$${accountBalance.toFixed(2)}` : 'Loading...'}</p>
             </div>
           </div>
         </div>
