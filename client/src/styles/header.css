@@ -1,0 +1,227 @@
+.app-header {
+  background-color: var(--header-background, #ffffff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 70px;
+}
+
+.logo a {
+  text-decoration: none;
+}
+
+.logo h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-color, #4f46e5);
+  margin: 0;
+}
+
+.main-nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 20px;
+  align-items: center;
+}
+
+.main-nav a {
+  text-decoration: none;
+  color: var(--text-color, #1e293b);
+  font-weight: 500;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.main-nav a:hover {
+  color: var(--primary-color, #4f46e5);
+}
+
+.signup-button {
+  background-color: var(--primary-color, #4f46e5);
+  color: white !important;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.signup-button:hover {
+  background-color: var(--primary-dark, #4338ca);
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--primary-light, #a5b4fc);
+  color: var(--primary-color, #4f46e5);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-email {
+  display: none;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.user-menu:hover .dropdown-menu {
+  display: flex;
+}
+
+.dropdown-menu {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--form-background, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.dropdown-menu a,
+.dropdown-menu button {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--text-color, #1e293b);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu button:hover {
+  background-color: var(--hover-background, #f1f5f9);
+}
+
+.dropdown-menu button {
+  color: #ef4444;
+}
+
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.nav-toggle span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background-color: var(--text-color, #1e293b);
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+@media (max-width: 768px) {
+  .nav-toggle {
+    display: flex;
+  }
+
+  .main-nav {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background-color: var(--header-background, #ffffff);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+  }
+
+  .main-nav.open {
+    max-height: 300px;
+  }
+
+  .main-nav ul {
+    flex-direction: column;
+    padding: 20px;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .user-menu {
+    width: 100%;
+  }
+
+  .user-button {
+    width: 100%;
+    border-radius: 6px;
+    padding: 8px 12px;
+    justify-content: flex-start;
+  }
+
+  .user-email {
+    display: inline;
+  }
+
+  .dropdown-menu {
+    position: static;
+    box-shadow: none;
+    margin-top: 10px;
+    margin-left: 20px;
+    width: calc(100% - 20px);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .app-header {
+    background-color: var(--header-background-dark, #1e293b);
+  }
+
+  .main-nav a {
+    color: var(--text-color-dark, #f8fafc);
+  }
+
+  .nav-toggle span {
+    background-color: var(--text-color-dark, #f8fafc);
+  }
+
+  .dropdown-menu {
+    background-color: var(--form-background-dark, #1e293b);
+  }
+
+  .dropdown-menu a,
+  .dropdown-menu button {
+    color: var(--text-color-dark, #f8fafc);
+  }
+
+  .dropdown-menu a:hover,
+  .dropdown-menu button:hover {
+    background-color: var(--hover-background-dark, #334155);
+  }
+} 
