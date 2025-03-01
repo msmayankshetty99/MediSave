@@ -50,7 +50,7 @@ function Profile() {
     <div className="profile-container">
       <div className="profile-header">
         <h1>Your Profile</h1>
-        <p>Manage your account settings</p>
+        <p>Manage your account settings and security preferences</p>
       </div>
 
       <div className="profile-content">
@@ -64,6 +64,10 @@ function Profile() {
             <div className="info-group">
               <label>Account Created</label>
               <p>{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p>
+            </div>
+            <div className="info-group">
+              <label>Last Login</label>
+              <p>{user?.last_login ? new Date(user.last_login).toLocaleDateString() : 'N/A'}</p>
             </div>
           </div>
         </div>
@@ -83,7 +87,7 @@ function Profile() {
                 id="currentPassword"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter current password"
                 required
               />
             </div>
@@ -95,7 +99,7 @@ function Profile() {
                 id="newPassword"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter new password"
                 required
               />
             </div>
@@ -107,14 +111,16 @@ function Profile() {
                 id="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Confirm new password"
                 required
               />
             </div>
 
-            <button type="submit" className="update-button" disabled={loading}>
-              {loading ? 'Updating...' : 'Update Password'}
-            </button>
+            <div className="form-actions">
+              <button type="submit" className="update-button" disabled={loading}>
+                {loading ? 'Updating...' : 'Update Password'}
+              </button>
+            </div>
           </form>
         </div>
       </div>

@@ -2,7 +2,7 @@ import './App.css';
 import Expenses from './Expenses';
 import Dashboard from './Dashboard';
 import React, { useState, useEffect, createContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { FaHeartbeat, FaSignOutAlt } from 'react-icons/fa';
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -69,6 +69,23 @@ function Sidenav({ theme, toggleTheme }) {
   );
 }
 
+// Layout component to conditionally render sidenav
+function AppLayout({ theme, toggleTheme, children }) {
+  const location = useLocation();
+  const authRoutes = ['/login', '/signup', '/reset-password'];
+  const showSidenav = !authRoutes.includes(location.pathname);
+  const isAuthPage = authRoutes.includes(location.pathname);
+
+  return (
+    <div className={`app-container ${isAuthPage ? 'auth-page' : ''}`}>
+      {showSidenav && <Sidenav theme={theme} toggleTheme={toggleTheme} />}
+      <main className="main-content">
+        {children}
+      </main>
+    </div>
+  );
+}
+
 function App() {
   // Get theme from localStorage or default to 'light'
   const [theme, setTheme] = useState(() => {
@@ -93,36 +110,31 @@ function App() {
       <ThemeContext.Provider value={{ theme, toggleTheme }}>
         <Router>
           <div className={`App ${theme}`}>
-            <div className="app-container">
-              <Routes>
-                <Route path="/login" element={null} />
-                <Route path="/signup" element={null} />
-                <Route path="/reset-password" element={null} />
-                <Route path="*" element={<Sidenav theme={theme} toggleTheme={toggleTheme} />} />
-              </Routes>
-              
-              <main className="main-content">
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  
-                  {/* Protected routes */}
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/expenses" element={<Expenses />} />
-                    <Route path="/profile" element={<Profile />} />
-                  </Route>
-                  
-                  {/* Redirect to dashboard if authenticated, otherwise to login */}
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  
-                  {/* Fallback for unknown routes */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </main>
-            </div>
+            <Routes>
+              <Route path="*" element={
+                <AppLayout theme={theme} toggleTheme={toggleTheme}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    
+                    {/* Protected routes */}
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/expenses" element={<Expenses />} />
+                      <Route path="/profile" element={<Profile />} />
+                    </Route>
+                    
+                    {/* Redirect to expenses if authenticated, otherwise to login */}
+                    <Route path="/" element={<Navigate to="/expenses" replace />} />
+                    
+                    {/* Fallback for unknown routes */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </AppLayout>
+              } />
+            </Routes>
           </div>
         </Router>
       </ThemeContext.Provider>

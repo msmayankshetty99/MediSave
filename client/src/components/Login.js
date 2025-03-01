@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { ThemeContext } from '../App';
 import { Link, useNavigate } from 'react-router-dom';
@@ -12,6 +12,14 @@ function Login() {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
 
+  // Ensure body class is set correctly
+  useEffect(() => {
+    document.body.className = theme;
+    return () => {
+      document.body.className = '';
+    };
+  }, [theme]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
@@ -23,14 +31,14 @@ function Login() {
 
     const result = await signIn(email, password);
     if (result) {
-      navigate('/dashboard');
+      navigate('/expenses');
     } else {
       setErrorMessage(error || 'Failed to sign in. Please check your credentials.');
     }
   };
 
   return (
-    <div className="auth-container">
+    <div className={`auth-container ${theme}`}>
       <button 
         className="theme-toggle-auth" 
         onClick={toggleTheme}

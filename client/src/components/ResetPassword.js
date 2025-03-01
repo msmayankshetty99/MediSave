@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { ThemeContext } from '../App';
 import { Link } from 'react-router-dom';
@@ -10,6 +10,14 @@ function ResetPassword() {
   const [isError, setIsError] = useState(false);
   const { resetPassword, loading } = useAuth();
   const { theme, toggleTheme } = useContext(ThemeContext);
+
+  // Ensure body class is set correctly
+  useEffect(() => {
+    document.body.className = theme;
+    return () => {
+      document.body.className = '';
+    };
+  }, [theme]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +41,7 @@ function ResetPassword() {
   };
 
   return (
-    <div className="auth-container">
+    <div className={`auth-container ${theme}`}>
       <button 
         className="theme-toggle-auth" 
         onClick={toggleTheme}

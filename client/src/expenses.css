@@ -17,6 +17,11 @@
   --success-color: #10b981;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --danger-hover: #fee2e2;
+  --input-background: #f8fafc;
+  --input-background-focus: #eff6ff;
+  --primary-color-rgb: 59, 130, 246;
+  --input-border: #e2e8f0;
+  --button-border: #e2e8f0;
 }
 
 /* Dark Theme Variables - Graphite with Bright Royal Blue accents */
@@ -36,6 +41,11 @@
   --success-color: #30d158;
   --shadow-color: rgba(0, 0, 0, 0.3);
   --danger-hover: #450a0a;
+  --input-background: #2c2c2e;
+  --input-background-focus: #3a3a3c;
+  --primary-color-rgb: 66, 133, 244;
+  --input-border: #38383a;
+  --button-border: #38383a;
 }
 
 /* Main container */
@@ -252,26 +262,31 @@
 
 .search-input {
   padding: 0.625rem 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border, var(--border-color));
   border-radius: 0.375rem;
   font-size: 0.875rem;
   width: 250px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  background-color: var(--form-background);
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s;
+  background-color: var(--input-background);
   color: var(--text-primary);
+}
+
+.search-input:hover {
+  border-color: var(--primary-color);
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+  background-color: var(--input-background-focus);
 }
 
 .scan-receipt-button {
   padding: 0.625rem 1.25rem;
   background-color: var(--form-background);
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--button-border, var(--border-color));
   border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -296,12 +311,16 @@
   padding: 0.625rem 1.25rem;
   background-color: var(--primary-color);
   color: var(--text-light);
-  border: none;
+  border: 1px solid transparent;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.dark .add-expense-button {
+  border-color: var(--button-border);
 }
 
 .add-expense-button:hover {
@@ -353,12 +372,18 @@
 .form-group select,
 .form-group textarea {
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border, var(--border-color));
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  background-color: var(--card-background);
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s;
+  background-color: var(--input-background);
   color: var(--text-primary);
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: var(--primary-color);
 }
 
 .form-group input:focus,
@@ -366,7 +391,8 @@
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+  background-color: var(--input-background-focus);
 }
 
 .form-actions {
@@ -378,12 +404,16 @@
   padding: 0.75rem 1.5rem;
   background-color: var(--primary-color);
   color: var(--text-light);
-  border: none;
+  border: 1px solid transparent;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.dark .submit-button {
+  border-color: var(--button-border);
 }
 
 .submit-button:hover {

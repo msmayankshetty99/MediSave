@@ -12,9 +12,11 @@
   --text-color: #1e293b;
   --text-secondary: #64748b;
   --border-color: #e2e8f0;
-  --input-background: #ffffff;
+  --input-background: #f8fafc;
+  --input-background-focus: #f1f5f9;
   --hover-background: #f1f5f9;
   --primary-color: #4f46e5;
+  --primary-color-rgb: 79, 70, 229;
   --primary-dark: #4338ca;
   --primary-light: #a5b4fc;
   --disabled-color: #a5b4fc;
@@ -23,6 +25,8 @@
   --card-background: #ffffff;
   --text-primary: #1e293b;
   --active-background: rgba(79, 70, 229, 0.1);
+  --button-border: #e2e8f0;
+  --input-border: #e2e8f0;
 }
 
 [data-theme="dark"] {
@@ -32,9 +36,11 @@
   --text-color: #f8fafc;
   --text-secondary: #cbd5e1;
   --border-color: #334155;
-  --input-background: #1e293b;
+  --input-background: #2a3649;
+  --input-background-focus: #334155;
   --hover-background: #334155;
   --primary-color: #6366f1;
+  --primary-color-rgb: 99, 102, 241;
   --primary-dark: #4f46e5;
   --primary-light: #818cf8;
   --disabled-color: #6366f1;
@@ -43,6 +49,8 @@
   --card-background: #1e293b;
   --text-primary: #f8fafc;
   --active-background: rgba(99, 102, 241, 0.2);
+  --button-border: #4b5563;
+  --input-border: #4b5563;
 }
 
 body {
@@ -126,6 +134,12 @@ main {
   min-height: 100vh;
   height: 100%;
   flex: 1;
+}
+
+/* Special styling for auth pages */
+.auth-page .app-container {
+  display: block;
+  width: 100%;
 }
 
 /* Sidenav */
@@ -284,9 +298,16 @@ main {
 /* Main content */
 .main-content {
   flex: 1;
-  overflow-x: hidden;
   margin-left: 250px;
-  min-height: 100vh;
+  padding: 0;
+  width: calc(100% - 250px);
+  transition: margin-left 0.3s, width 0.3s;
+}
+
+/* Full width for auth pages */
+.auth-page .main-content {
+  margin-left: 0;
+  width: 100%;
 }
 
 /* Adjust main content for auth pages (no sidenav) */
