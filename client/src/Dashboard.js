@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { ThemeContext } from './App';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
@@ -13,41 +13,6 @@ const ACCOUNT_ID = "67c28e049683f20dd518c023"; //we should update this eventuall
 
 var request = require('superagent');
 
-let accountBalance = null;
-
-request.get(`http://api.nessieisreal.com/customers/${ACCOUNT_ID}/accounts?key=${API_KEY}`)
-  .end(function (err, res) {
-    if (err) {
-      // Log error information to diagnose the issue
-      console.error('Error fetching data:', err);
-      return;
-    }
-
-    // Check if the response is null or undefined
-    if (!res) {
-      console.error('No response received');
-      return;
-    }
-
-    // Safely check if status is available
-    if (res && res.status) {
-      console.log('Response Status:', res.status);
-    }
-
-    // Handle the response body
-    if (res && res.body) {
-      console.log('Response Body:', res.body);
-      for (let x of res.body) {
-        if (x['nickname'] === 'Health Savings') {
-          console.log(x['balance']);
-          accountBalance = x['balance'];
-        }
-      }
-    } else {
-      console.error('No body in response');
-    }
-  });
-
 function Dashboard() {
   const { theme } = useContext(ThemeContext);
   const [expensesList, setExpensesList] = useState([]);
@@ -56,6 +21,8 @@ function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredExpenses, setFilteredExpenses] = useState([]);
   const [filteredAmount, setFilteredAmount] = useState(0);
+  const [initialBalance, setInitialBalance] = useState(null);
+  const [healthBalance, setHealthBalance] = useState(null);
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -77,16 +44,60 @@ function Dashboard() {
     { id: 'other', name: 'Other', icon: '📌', color: '#8B5CF6' }
   ];
 
-  // Load expenses from localStorage
+  // Fetch account balance
+  const fetchAccountBalance = () => {
+    request.get(`http://api.nessieisreal.com/customers/${ACCOUNT_ID}/accounts?key=${API_KEY}`)
+      .end(function (err, res) {
+        if (err) {
+          console.error('Error fetching data:', err);
+          return;
+        }
+
+        if (!res) {
+          console.error('No response received');
+          return;
+        }
+
+        if (res && res.status) {
+          console.log('Response Status:', res.status);
+        }
+
+        if (res && res.body) {
+          console.log('Response Body:', res.body);
+          for (let x of res.body) {
+            if (x['nickname'] === 'Health Savings') {
+              console.log('Initial Health Savings balance:', x['balance']);
+              setInitialBalance(x['balance']);
+            }
+          }
+        } else {
+          console.error('No body in response');
+        }
+      });
+  };
+
+  // Load expenses from localStorage and fetch account balance
   useEffect(() => {
+    console.log("Fetching account balance");
+    fetchAccountBalance();
+    
     const savedExpenses = localStorage.getItem('expenses');
     const expenses = savedExpenses ? JSON.parse(savedExpenses) : [];
     setExpensesList(expenses);
     
-    // Calculate total
-    const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    // Calculate total with proper rounding to avoid floating point issues
+    const total = expenses.reduce((sum, exp) => sum + Math.round(exp.amount * 100) / 100, 0);
     setTotalAmount(total);
-  }, []);
+  }, []); // Empty dependency array to run only once on mount
+
+  // Update health balance whenever expenses or initial balance changes
+  useEffect(() => {
+    if (initialBalance !== null) {
+      const newHealthBalance = initialBalance - totalAmount;
+      setHealthBalance(newHealthBalance);
+      console.log(`Updated Health Balance: ${initialBalance} - ${totalAmount} = ${newHealthBalance}`);
+    }
+  }, [initialBalance, totalAmount]);
 
   // Filter expenses based on selected category
   useEffect(() => {
@@ -98,8 +109,8 @@ function Dashboard() {
     
     setFilteredExpenses(filtered);
     
-    // Calculate filtered total
-    const filteredTotal = filtered.reduce((sum, exp) => sum + exp.amount, 0);
+    // Calculate filtered total with proper rounding
+    const filteredTotal = filtered.reduce((sum, exp) => sum + Math.round(exp.amount * 100) / 100, 0);
     setFilteredAmount(filteredTotal);
   }, [expensesList, selectedCategory]);
 
@@ -115,10 +126,10 @@ function Dashboard() {
 
     expensesList.forEach(expense => {
       if (categoryTotals[expense.category] !== undefined) {
-        categoryTotals[expense.category] += expense.amount;
+        categoryTotals[expense.category] += Math.round(expense.amount * 100) / 100;
       } else {
         // Handle expenses with categories that no longer exist
-        categoryTotals['other'] += expense.amount;
+        categoryTotals['other'] += Math.round(expense.amount * 100) / 100;
       }
     });
 
@@ -205,7 +216,6 @@ function Dashboard() {
 
   // Sort expenses
   const sortedExpenses = [...filteredExpenses].sort((a, b) => {
-    console.log("test");
     const { key, direction } = sortConfig;
     
     if (key === 'date') {
@@ -261,8 +271,8 @@ function Dashboard() {
 
           <div className="summary-card total">
             <div className="card-content">
-              <h3>Money Saved</h3>
-              <p className="amount">{accountBalance !== null ? `$${accountBalance.toFixed(2)}` : 'Loading...'}</p>
+              <h3>Health Balance</h3>
+              <p className="amount">{healthBalance !== null ? `$${healthBalance.toFixed(2)}` : 'Loading...'}</p>
             </div>
           </div>
         </div>

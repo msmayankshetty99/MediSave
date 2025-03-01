@@ -59,7 +59,17 @@ function Expenses() {
       return;
     }
 
+    // Ensure amount is a valid number and round to 2 decimal places to avoid floating point issues
+    const expenseAmount = Math.round(parseFloat(expense.amount) * 100) / 100;
+    if (isNaN(expenseAmount) || expenseAmount <= 0) {
+      alert("Please enter a valid amount greater than zero");
+      return;
+    }
+
     if (editingExpense) {
+      // Calculate the difference in amount
+      const amountDifference = expenseAmount - editingExpense.amount;
+      
       // Update existing expense
       setExpensesList(prevList => 
         prevList.map(exp => 
@@ -67,7 +77,7 @@ function Expenses() {
             ? {
                 ...exp,
                 name: expense.name,
-                amount: parseFloat(expense.amount),
+                amount: expenseAmount,
                 category: expense.category,
                 date: expense.date,
                 notes: expense.notes
@@ -75,6 +85,39 @@ function Expenses() {
             : exp
         )
       );
+      
+      // If the amount changed, dispatch an event with the difference
+      if (amountDifference !== 0) {
+        console.log(`Dispatching expenseEdited event with difference: ${amountDifference}`);
+        const expenseEditedEvent = new CustomEvent('expenseEdited', {
+          detail: {
+            amountDifference: amountDifference,
+            category: expense.category,
+            date: expense.date
+          }
+        });
+        window.dispatchEvent(expenseEditedEvent);
+        
+        // Show feedback to the user
+        const message = amountDifference > 0 
+          ? `Health Balance decreased by $${amountDifference.toFixed(2)}`
+          : `Health Balance increased by $${Math.abs(amountDifference).toFixed(2)}`;
+        
+        // Use a temporary notification or alert
+        const notification = document.createElement('div');
+        notification.className = 'expense-notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+          notification.classList.add('fade-out');
+          setTimeout(() => {
+            document.body.removeChild(notification);
+          }, 500);
+        }, 3000);
+      }
+      
       setEditingExpense(null);
     } else {
       // Add new expense
@@ -83,12 +126,40 @@ function Expenses() {
         {
           id: Date.now(),
           name: expense.name,
-          amount: parseFloat(expense.amount),
+          amount: expenseAmount,
           category: expense.category,
           date: expense.date,
           notes: expense.notes
         }
       ]);
+
+      // Dispatch custom event for expense added
+      console.log(`Dispatching expenseAdded event with amount: ${expenseAmount}`);
+      const expenseAddedEvent = new CustomEvent('expenseAdded', {
+        detail: {
+          amount: expenseAmount,
+          category: expense.category,
+          date: expense.date
+        }
+      });
+      window.dispatchEvent(expenseAddedEvent);
+      
+      // Show feedback to the user
+      const message = `Health Balance decreased by $${expenseAmount.toFixed(2)}`;
+      
+      // Use a temporary notification or alert
+      const notification = document.createElement('div');
+      notification.className = 'expense-notification';
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 500);
+      }, 3000);
     }
 
     // Reset form
@@ -106,7 +177,43 @@ function Expenses() {
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
-      setExpensesList(prevList => prevList.filter(expense => expense.id !== id));
+      // Find the expense to be deleted
+      const expenseToDelete = expensesList.find(expense => expense.id === id);
+      
+      if (expenseToDelete) {
+        // Dispatch custom event for expense deleted
+        console.log(`Dispatching expenseDeleted event with amount: ${expenseToDelete.amount}`);
+        const expenseDeletedEvent = new CustomEvent('expenseDeleted', {
+          detail: {
+            amount: expenseToDelete.amount,
+            category: expenseToDelete.category,
+            date: expenseToDelete.date
+          }
+        });
+        
+        // Remove the expense from the list
+        setExpensesList(prevList => prevList.filter(expense => expense.id !== id));
+        
+        // Dispatch the event
+        window.dispatchEvent(expenseDeletedEvent);
+        
+        // Show feedback to the user
+        const message = `Health Balance increased by $${expenseToDelete.amount.toFixed(2)}`;
+        
+        // Use a temporary notification or alert
+        const notification = document.createElement('div');
+        notification.className = 'expense-notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+          notification.classList.add('fade-out');
+          setTimeout(() => {
+            document.body.removeChild(notification);
+          }, 500);
+        }, 3000);
+      }
     }
   };
 
