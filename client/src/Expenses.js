@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import './expenses.css';
-import { ThemeContext } from './App';
 
 function Expenses() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
   const [expense, setExpense] = useState({
     name: '',
     amount: '',
@@ -27,11 +25,11 @@ function Expenses() {
 
   // Categories for medical expenses
   const categories = [
-    { id: 'medication', name: 'Medication', icon: '💊' },
-    { id: 'consultation', name: 'Doctor Visit', icon: '👨‍⚕️' },
-    { id: 'test', name: 'Medical Tests', icon: '🔬' },
-    { id: 'hospital', name: 'Hospital', icon: '🏥' },
-    { id: 'other', name: 'Other', icon: '📌' }
+    { id: 'medication', name: 'Medication', icon: '💊', color: '#4F46E5' },
+    { id: 'consultation', name: 'Doctor Visit', icon: '👨‍⚕️', color: '#10B981' },
+    { id: 'test', name: 'Medical Tests', icon: '🔬', color: '#F59E0B' },
+    { id: 'hospital', name: 'Hospital', icon: '🏥', color: '#EF4444' },
+    { id: 'other', name: 'Other', icon: '📌', color: '#8B5CF6' }
   ];
 
   // Save to localStorage whenever expenses change
@@ -195,13 +193,6 @@ function Expenses() {
         <div className="header-content">
           <div className="header-top">
             <h1>Medical Expense Tracker</h1>
-            <button 
-              className="theme-toggle" 
-              onClick={toggleTheme}
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            >
-              {theme === 'light' ? '🌙' : '☀️'}
-            </button>
           </div>
           <p>Track and manage your healthcare expenses</p>
         </div>
@@ -232,11 +223,15 @@ function Expenses() {
                 key={category.id} 
                 className={`category-card ${filter === category.id ? 'active' : ''}`}
                 onClick={() => setFilter(category.id === filter ? 'all' : category.id)}
+                style={{ 
+                  backgroundColor: filter === category.id ? `${category.color}20` : 'var(--form-background)',
+                  borderColor: filter === category.id ? category.color : 'var(--border-color)'
+                }}
               >
                 <div className="category-icon">{category.icon}</div>
                 <div className="category-details">
                   <h4>{category.name}</h4>
-                  <p>${category.total.toFixed(2)}</p>
+                  <p style={{ color: category.color }}>${category.total.toFixed(2)}</p>
                 </div>
               </div>
             ))}
@@ -250,26 +245,24 @@ function Expenses() {
               <div className="search-container">
                 <input
                   type="text"
+                  className="search-input"
                   placeholder="Search expenses..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
                 />
               </div>
-              <button 
+              <button
                 className="add-expense-button"
                 onClick={() => {
                   setShowAddExpense(!showAddExpense);
-                  if (editingExpense) {
-                    setEditingExpense(null);
-                    setExpense({
-                      name: '',
-                      amount: '',
-                      category: 'medication',
-                      date: new Date().toISOString().substr(0, 10),
-                      notes: ''
-                    });
-                  }
+                  setEditingExpense(null);
+                  setExpense({
+                    name: '',
+                    amount: '',
+                    category: 'medication',
+                    date: new Date().toISOString().substr(0, 10),
+                    notes: ''
+                  });
                 }}
               >
                 {showAddExpense ? 'Cancel' : 'Add Expense'}
@@ -420,7 +413,7 @@ function Expenses() {
                           </div>
                         </td>
                         <td>
-                          <span className="category-badge">
+                          <span className="category-badge" style={{ backgroundColor: `${category.color}20` }}>
                             <span className="category-icon">{category.icon}</span>
                             {category.name}
                           </span>

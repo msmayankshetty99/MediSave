@@ -1,7 +1,8 @@
 import './App.css';
 import Expenses from './Expenses';
+import Dashboard from './Dashboard';
 import React, { useState, useEffect, createContext } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, NavLink } from 'react-router-dom';
 
 // Create a theme context
 export const ThemeContext = createContext();
@@ -28,12 +29,43 @@ function App() {
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       <Router>
         <div className={`App ${theme}`}>
-          <main>
-            <Routes>
-              <Route path="/" element={<Expenses />} />
-              <Route path="/expenses" element={<Expenses />} />
-            </Routes>
-          </main>
+          <div className="app-container">
+            <nav className="sidenav">
+              <div className="sidenav-header">
+                <h2>MediSave</h2>
+              </div>
+              <ul className="sidenav-menu">
+                <li>
+                  <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
+                    <span className="nav-icon">📊</span>
+                    Dashboard
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/expenses" className={({ isActive }) => isActive ? "active" : ""}>
+                    <span className="nav-icon">💰</span>
+                    Expenses
+                  </NavLink>
+                </li>
+              </ul>
+              <div className="sidenav-footer">
+                <button 
+                  className="theme-toggle-sidenav" 
+                  onClick={toggleTheme}
+                  aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                >
+                  {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+                </button>
+              </div>
+            </nav>
+            <main className="main-content">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/expenses" element={<Expenses />} />
+              </Routes>
+            </main>
+          </div>
         </div>
       </Router>
     </ThemeContext.Provider>
