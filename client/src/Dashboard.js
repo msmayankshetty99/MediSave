@@ -3,9 +3,11 @@ import { ThemeContext } from './App';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import './dashboard.css';
+import axios from 'axios';
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
+
 
 // we should make these environment variables
 const API_KEY = "f671082f5fdbe6488ce24f306baf37a3";
@@ -95,6 +97,30 @@ function Dashboard() {
     if (initialBalance !== null) {
       const newHealthBalance = initialBalance - totalAmount;
       setHealthBalance(newHealthBalance);
+
+      const requestBody = {
+        medium: "balance",  // Choose between 'balance' or 'rewards'
+        transaction_date: "2025-03-01",
+        status: "pending",
+        amount: totalAmount,
+        description: "Withdrawal for medical expenses"
+      };
+
+      const url = (`http://api.nessieisreal.com/customers/67c2920b9683f20dd518c02d/accounts?key=${API_KEY}`)
+
+      axios.post(url, requestBody, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        console.log('Success:', response.data);
+      })
+      .catch(error => {
+        console.error('Error:', error.response ? error.response.data : error.message);
+      });
+      
+      
       console.log(`Updated Health Balance: ${initialBalance} - ${totalAmount} = ${newHealthBalance}`);
     }
   }, [initialBalance, totalAmount]);
