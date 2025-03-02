@@ -245,13 +245,38 @@ function Expenses() {
   };
 
   const handleScanComplete = (scannedData) => {
-    // Set the expense form with the scanned data
+    console.log('Received scanned data:', scannedData);
+    
+    // Map the category to one of the valid categories
+    let category = 'other'; // Default to 'other'
+    
+    if (scannedData.category) {
+      // Make sure the category is one of the valid options
+      const validCategories = ['medication', 'consultation', 'test', 'hospital', 'other'];
+      if (validCategories.includes(scannedData.category.toLowerCase())) {
+        category = scannedData.category.toLowerCase();
+      } else {
+        // Try to map similar categories
+        const categoryLower = scannedData.category.toLowerCase();
+        if (categoryLower.includes('medicine') || categoryLower.includes('drug') || categoryLower.includes('prescription')) {
+          category = 'medication';
+        } else if (categoryLower.includes('doctor') || categoryLower.includes('visit') || categoryLower.includes('consult')) {
+          category = 'consultation';
+        } else if (categoryLower.includes('test') || categoryLower.includes('lab') || categoryLower.includes('scan') || categoryLower.includes('x-ray')) {
+          category = 'test';
+        } else if (categoryLower.includes('hospital') || categoryLower.includes('surgery') || categoryLower.includes('emergency')) {
+          category = 'hospital';
+        }
+      }
+    }
+    
+    // Map the fields from the server response to the expense form fields
     setExpense({
-      name: scannedData.name || '',
+      name: scannedData.provider || scannedData.description || '',
       amount: scannedData.amount ? scannedData.amount.toString() : '',
-      category: scannedData.category || 'other',
+      category: category,
       date: scannedData.date || new Date().toISOString().substr(0, 10),
-      notes: scannedData.notes || ''
+      notes: `${scannedData.description || ''} ${scannedData.insuranceInfo ? `Insurance: ${scannedData.insuranceInfo}` : ''}`.trim()
     });
     
     // Show the expense form with pre-filled data

@@ -1,6 +1,6 @@
 # MediSave - Medical Expense Tracker
 
-MediSave is a comprehensive medical expense tracking application that helps you manage and monitor your healthcare expenses. The application includes a receipt scanning feature that uses GPT-4 Vision to automatically extract expense details from medical receipts.
+MediSave is a comprehensive medical expense tracking application that helps you manage and monitor your healthcare expenses. The application includes a receipt scanning feature that uses OpenAI's GPT-4o-mini model to automatically extract expense details from medical receipts.
 
 ## Features
 
@@ -38,7 +38,7 @@ MediSave is a comprehensive medical expense tracking application that helps you 
    - Add your OpenAI API key:
      ```
      OPENAI_API_KEY=your_openai_api_key_here
-     PORT=5000
+     PORT=5001
      ```
 
 ### Running the Application
@@ -48,7 +48,7 @@ MediSave is a comprehensive medical expense tracking application that helps you 
    npm start
    ```
 
-   This will start the React client on port 3000 and the Express server on port 5000.
+   This will start the React client on port 3000 and the Express server on port 5001.
 
 2. For development with hot-reloading on the server:
    ```
@@ -61,19 +61,20 @@ MediSave is a comprehensive medical expense tracking application that helps you 
 2. Click the "Scan Receipt" button
 3. Upload a photo of your medical receipt
 4. The application will analyze the receipt and extract:
-   - Description/name of the expense
+   - Provider/merchant name
    - Amount
-   - Date
-   - Category (medication, doctor visit, medical tests, hospital, or other)
-   - Any additional notes
+   - Date of service
+   - Description of service or items
+   - Category (automatically mapped to one of: medication, consultation, test, hospital, or other)
+   - Insurance information (if present)
 5. Review the extracted information and make any necessary adjustments
 6. Click "Add Expense" to save the expense to your list
 
 ## Technologies Used
 
-- **Frontend**: React, Chart.js, CSS
+- **Frontend**: React, CSS
 - **Backend**: Node.js, Express
-- **AI**: OpenAI GPT-4 Vision API
+- **AI**: OpenAI GPT-4o-mini API for image analysis
 - **File Handling**: Multer
 - **Development**: Concurrently, Nodemon
 
@@ -83,6 +84,6 @@ This project is licensed under the ISC License.
 
 ## Acknowledgements
 
-- OpenAI for the GPT-4 Vision API
+- OpenAI for the GPT-4o-mini API
 - React and Express communities for excellent documentation
 - All contributors to this project

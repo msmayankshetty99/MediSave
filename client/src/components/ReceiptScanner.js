@@ -36,7 +36,7 @@ const ReceiptScanner = ({ onScanComplete, onCancel }) => {
       const formData = new FormData();
       formData.append('receipt', file);
 
-      const response = await fetch('http://localhost:5000/api/scan-receipt', {
+      const response = await fetch('http://localhost:5001/api/scan-receipt', {
         method: 'POST',
         body: formData,
       });

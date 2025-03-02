@@ -4,6 +4,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import './dashboard.css';
 import axios from 'axios';
+import ExpenseInsights from './components/ExpenseInsights';
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -343,6 +344,8 @@ function Dashboard() {
             </div>
           </div>
         </div>
+        
+        <ExpenseInsights expenses={expensesList} categories={categories} />
 
         <div className="recent-expenses">
           <h2>Recent Expenses</h2>
