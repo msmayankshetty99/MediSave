@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './expenses.css';
 import ReceiptScanner from './components/ReceiptScanner';
+import axios from 'axios';
 
 function Expenses() {
   const [expense, setExpense] = useState({
@@ -24,6 +25,9 @@ function Expenses() {
   const [showReceiptScanner, setShowReceiptScanner] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+  const [alternatives, setAlternatives] = useState([]);
+  const [loadingAlternatives, setLoadingAlternatives] = useState(false);
+  const [alternativesError, setAlternativesError] = useState(null);
 
   // Categories for medical expenses
   const categories = [
@@ -43,12 +47,30 @@ function Expenses() {
     setTotalAmount(total);
   }, [expensesList]);
 
+  // Add a useEffect to automatically fetch alternatives when expense details change
+  useEffect(() => {
+    // Only fetch if we have the necessary data and we're in add expense mode (not editing)
+    if (showAddExpense && !editingExpense && expense.name && expense.category !== 'other') {
+      // Add a small delay to avoid too many API calls while typing
+      const timer = setTimeout(() => {
+        fetchAlternatives();
+      }, 1000); // 1 second delay
+      
+      return () => clearTimeout(timer);
+    }
+  }, [expense.name, expense.amount, expense.category, expense.notes, showAddExpense, editingExpense]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setExpense(prevExpense => ({
       ...prevExpense,
       [name]: value
     }));
+
+    // Clear alternatives when expense details change
+    if (['name', 'amount', 'category'].includes(name)) {
+      setAlternatives([]);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -171,6 +193,11 @@ function Expenses() {
       notes: ''
     });
     
+    // Reset alternatives after submitting
+    setAlternatives([]);
+    setAlternativesError(null);
+    setLoadingAlternatives(false);
+    
     // Close form
     setShowAddExpense(false);
   };
@@ -242,6 +269,10 @@ function Expenses() {
     setShowReceiptScanner(true);
     setShowAddExpense(false);
     setEditingExpense(null);
+    // Reset alternatives when opening the receipt scanner
+    setAlternatives([]);
+    setAlternativesError(null);
+    setLoadingAlternatives(false);
   };
 
   const handleScanComplete = (scannedData) => {
@@ -282,6 +313,52 @@ function Expenses() {
     // Show the expense form with pre-filled data
     setShowAddExpense(true);
     setShowReceiptScanner(false);
+  };
+
+  // Function to fetch alternatives with identical composition
+  const fetchAlternatives = async () => {
+    // Only fetch if we have the necessary data
+    if (!expense.name) {
+      return;
+    }
+
+    try {
+      setLoadingAlternatives(true);
+      setAlternativesError(null);
+
+      console.log('Sending request with data:', {
+        expenseName: expense.name,
+        expenseAmount: expense.amount ? parseFloat(expense.amount) : null,
+        category: expense.category ? getCategoryDetails(expense.category).name : null,
+        notes: expense.notes
+      });
+
+      const response = await axios.post('http://localhost:5001/api/cheaper-alternatives', {
+        expenseName: expense.name,
+        expenseAmount: expense.amount ? parseFloat(expense.amount) : null,
+        category: expense.category ? getCategoryDetails(expense.category).name : null,
+        notes: expense.notes
+      });
+
+      console.log('Received response:', response.data);
+      
+      if (response.data.medicalItems && response.data.medicalItems.length > 0) {
+        console.log('Medical items found:', response.data.medicalItems.length);
+        setAlternatives(response.data.medicalItems);
+      } else {
+        console.log('No medical items found in the response');
+        setAlternatives([]);
+      }
+    } catch (error) {
+      console.error('Error fetching alternatives:', error);
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+      }
+      setAlternativesError('Failed to fetch alternatives. Please try again.');
+    } finally {
+      setLoadingAlternatives(false);
+    }
   };
 
   // Filter and sort expenses
@@ -427,6 +504,10 @@ function Expenses() {
                       date: new Date().toISOString().substr(0, 10),
                       notes: ''
                     });
+                    // Reset alternatives when opening the add expense form
+                    setAlternatives([]);
+                    setAlternativesError(null);
+                    setLoadingAlternatives(false);
                   }}
                 >
                   {showAddExpense ? 'Cancel' : 'Add Expense'}
@@ -513,10 +594,106 @@ function Expenses() {
                     name="notes"
                     value={expense.notes}
                     onChange={handleChange}
-                    placeholder="Add any additional details here..."
+                    placeholder={
+                      expense.category === 'medication'
+                        ? "List specific medical items here (e.g., 'Tylenol 500mg, Advil 200mg, Bandages') to find alternatives with identical composition."
+                        : expense.category === 'consultation'
+                          ? "Provide details about the doctor visit (e.g., 'Annual checkup with Dr. Smith, Primary care visit') to find more affordable alternatives."
+                          : expense.category === 'test'
+                            ? "Describe the medical tests (e.g., 'Blood work panel, Cholesterol test, X-ray') to find more affordable testing options."
+                            : expense.category === 'hospital'
+                              ? "Describe the hospital service (e.g., 'Emergency room visit, Outpatient procedure') to find more affordable alternatives."
+                              : "Add any additional details here..."
+                    }
                     rows="3"
                   ></textarea>
+                  <small className="form-hint">
+                    {expense.category === 'medication'
+                      ? "For best results, list each medical item separately with details like dosage or size."
+                      : expense.category === 'other'
+                        ? "Additional notes about this expense."
+                        : "Providing specific details will help find more affordable alternatives."}
+                  </small>
                 </div>
+                
+                {/* Alternatives Section */}
+                {expense.name && !editingExpense && expense.category !== 'other' && (
+                  <div className="alternatives-section">
+                    <div className="alternatives-header">
+                      <h4>
+                        {expense.category === 'medication' 
+                          ? 'Alternatives with identical composition' 
+                          : 'More affordable alternatives'}
+                      </h4>
+                    </div>
+                    
+                    <p className="alternatives-description">
+                      {expense.category === 'medication' 
+                        ? 'This tool automatically analyzes the medical items listed in your notes field and suggests alternatives with identical active ingredients.' 
+                        : expense.category === 'consultation'
+                          ? 'This tool automatically suggests alternative doctor visits or telehealth options that may be more affordable.'
+                          : expense.category === 'test'
+                            ? 'This tool automatically suggests alternative testing facilities or options that may be more affordable.'
+                            : expense.category === 'hospital'
+                              ? 'This tool automatically suggests alternative hospital services or facilities that may be more affordable.'
+                              : 'This tool automatically suggests more affordable alternatives for your healthcare expense.'}
+                    </p>
+                    
+                    {alternativesError && (
+                      <div className="alternatives-error">
+                        {alternativesError}
+                      </div>
+                    )}
+                    
+                    {loadingAlternatives && (
+                      <div className="alternatives-loading">
+                        <div className="loading-spinner"></div>
+                        <p>
+                          {expense.category === 'medication' 
+                            ? 'Analyzing medical items and finding alternatives...' 
+                            : 'Finding more affordable alternatives...'}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {alternatives.length > 0 ? (
+                      <div className="alternatives-list">
+                        {alternatives.map((item, itemIndex) => (
+                          <div key={itemIndex} className="medical-item">
+                            <h5 className="medical-item-name">{item.originalItem}</h5>
+                            {item.alternatives && item.alternatives.length > 0 ? (
+                              <div className="item-alternatives">
+                                {item.alternatives.map((alt, altIndex) => (
+                                  <div key={altIndex} className="alternative-item">
+                                    <div className="alternative-header">
+                                      <span className="alternative-name">{alt.name}</span>
+                                      {alt.estimatedCost && (
+                                        <span className="alternative-cost">{alt.estimatedCost}</span>
+                                      )}
+                                    </div>
+                                    <p className="alternative-explanation">{alt.explanation}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="no-alternatives">No alternatives found for this item.</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      !loadingAlternatives && (
+                        <div className="no-alternatives-message">
+                          {expense.category === 'medication' ? (
+                            <p>No medical items identified yet. Add specific medical items in the notes field above (e.g., "Tylenol 500mg, Advil 200mg").</p>
+                          ) : (
+                            <p>No alternatives found yet. Try providing more details about the service in the notes field.</p>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
                 
                 <div className="form-actions">
                   <button type="submit" className="submit-button">

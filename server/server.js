@@ -256,6 +256,210 @@ app.post('/api/expense-insights', async (req, res) => {
   }
 });
 
+// Endpoint to get alternatives with identical composition for medical items
+app.post('/api/cheaper-alternatives', async (req, res) => {
+  try {
+    const { expenseName, expenseAmount, category, notes } = req.body;
+    
+    console.log('=== ALTERNATIVES REQUEST RECEIVED ===');
+    console.log('Request body:', req.body);
+    
+    if (!expenseName) {
+      console.log('Missing expense name, returning 400');
+      return res.status(400).json({ error: 'Missing expense name' });
+    }
+    
+    // Ignore requests for the "other" category
+    if (category && category.toLowerCase() === 'other') {
+      console.log('Ignoring request for "other" category');
+      return res.json({ medicalItems: [] });
+    }
+    
+    console.log(`Analyzing expense data and generating alternatives`);
+    console.log(`Expense: ${expenseName}, Category: ${category}, Notes: ${notes || 'None provided'}`);
+    
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key is missing');
+      return res.status(500).json({ error: 'OpenAI API key is missing' });
+    }
+    
+    // Different prompts based on category
+    let prompt;
+    
+    if (category && category.toLowerCase() === 'medication') {
+      // For medications, focus on identical active ingredients
+      prompt = `
+        You are a medical expense advisor specializing in finding alternative medications with identical active ingredients. A user has recorded the following expense information:
+        
+        - Name: ${expenseName}
+        ${expenseAmount ? `- Amount: $${expenseAmount}` : ''}
+        ${category ? `- Category: ${category}` : ''}
+        ${notes ? `- Notes: ${notes}` : ''}
+        
+        First, analyze the notes field to identify specific medical items (medications, medical supplies, etc.). 
+        Ignore any non-medical items like regular groceries or household items.
+        
+        For each identified medical item, suggest up to 3 alternative brands or generic versions that contain EXACTLY THE SAME ACTIVE INGREDIENTS/MEDICAL COMPOSITION. This is VERY IMPORTANT - the alternatives must have identical medical composition, just from different manufacturers or as generic versions.
+        
+        For each alternative, provide:
+        1. The name of the alternative medication (brand name or generic)
+        2. The estimated cost if possible
+        3. A brief explanation confirming it has the identical active ingredients
+        
+        Format your response as a JSON object with the following structure:
+        {
+          "medicalItems": [
+            {
+              "originalItem": "Name of the identified medical item",
+              "alternatives": [
+                {
+                  "name": "Alternative medication name",
+                  "estimatedCost": "Estimated cost in dollars",
+                  "explanation": "Explanation confirming identical active ingredients"
+                },
+                ...
+              ]
+            },
+            ...
+          ]
+        }
+        
+        If no specific medical items can be identified from the notes or if the expense itself is not a medical item, return an empty array for medicalItems.
+        Only return the JSON object, nothing else.
+      `;
+    } else if (category && ['consultation', 'test', 'hospital'].includes(category.toLowerCase())) {
+      // For medical services (consultation, test, hospital), focus on similar services
+      const categoryType = category.toLowerCase() === 'consultation' ? 'doctor visits' : 
+                          category.toLowerCase() === 'test' ? 'medical tests' : 'hospital services';
+      
+      prompt = `
+        You are a medical expense advisor specializing in finding more affordable alternatives for healthcare services. A user has recorded the following expense information:
+        
+        - Name: ${expenseName}
+        ${expenseAmount ? `- Amount: $${expenseAmount}` : ''}
+        ${category ? `- Category: ${category}` : ''}
+        ${notes ? `- Notes: ${notes}` : ''}
+        
+        Based on this information, suggest up to 3 alternative ${categoryType} that could provide similar services at a lower cost.
+        
+        For each alternative, provide:
+        1. The name of the alternative service or provider
+        2. The estimated cost if possible (should be less than the original amount if provided)
+        3. A brief explanation of why it's a good alternative and what makes it more affordable
+        
+        Format your response as a JSON object with the following structure:
+        {
+          "medicalItems": [
+            {
+              "originalItem": "${expenseName}",
+              "alternatives": [
+                {
+                  "name": "Alternative service name",
+                  "estimatedCost": "Estimated cost in dollars",
+                  "explanation": "Explanation of the alternative service"
+                },
+                ...
+              ]
+            }
+          ]
+        }
+        
+        Only return the JSON object, nothing else.
+      `;
+    } else {
+      // Default prompt for unspecified categories
+      prompt = `
+        You are a medical expense advisor specializing in finding more affordable alternatives for healthcare expenses. A user has recorded the following expense information:
+        
+        - Name: ${expenseName}
+        ${expenseAmount ? `- Amount: $${expenseAmount}` : ''}
+        ${category ? `- Category: ${category}` : ''}
+        ${notes ? `- Notes: ${notes}` : ''}
+        
+        First, determine if this is a medication expense or a medical service expense.
+        
+        If it's a medication:
+        Identify specific medical items and suggest up to 3 alternative brands or generic versions that contain EXACTLY THE SAME ACTIVE INGREDIENTS/MEDICAL COMPOSITION.
+        
+        If it's a medical service:
+        Suggest up to 3 alternative services or providers that could provide similar care at a lower cost.
+        
+        For each alternative, provide:
+        1. The name of the alternative (medication or service)
+        2. The estimated cost if possible
+        3. A brief explanation of why it's a good alternative
+        
+        Format your response as a JSON object with the following structure:
+        {
+          "medicalItems": [
+            {
+              "originalItem": "Name of the identified medical item or service",
+              "alternatives": [
+                {
+                  "name": "Alternative name",
+                  "estimatedCost": "Estimated cost in dollars",
+                  "explanation": "Explanation of the alternative"
+                },
+                ...
+              ]
+            },
+            ...
+          ]
+        }
+        
+        If no specific medical items or services can be identified, return an empty array for medicalItems.
+        Only return the JSON object, nothing else.
+      `;
+    }
+    
+    console.log('Sending request to OpenAI...');
+    
+    // Call OpenAI API
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a helpful medical expense advisor that provides alternatives for healthcare expenses. Always respond with valid JSON." },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: 1000,
+      temperature: 0.7,
+    });
+    
+    console.log('Received response from OpenAI');
+    
+    // Parse the response
+    const content = response.choices[0].message.content.trim();
+    console.log('OpenAI response content:', content);
+    
+    let result;
+    
+    try {
+      // Try to parse the JSON response
+      result = JSON.parse(content);
+      
+      // Validate the structure
+      if (!result.medicalItems || !Array.isArray(result.medicalItems)) {
+        console.error('Invalid response format - medicalItems missing or not an array');
+        throw new Error('Invalid response format');
+      }
+      
+      console.log(`Found ${result.medicalItems.length} items in the response`);
+      
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error);
+      return res.status(500).json({ error: 'Failed to parse alternatives' });
+    }
+    
+    console.log('Sending response back to client');
+    return res.json(result);
+    
+  } catch (error) {
+    console.error('Error generating alternatives:', error);
+    return res.status(500).json({ error: 'Failed to generate alternatives' });
+  }
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
