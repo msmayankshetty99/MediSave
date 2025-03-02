@@ -232,14 +232,76 @@
   border-top-color: var(--primary-color);
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
+  .expense-insights {
+    padding: 1rem;
+  }
+  
   .insights-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
   }
   
+  .insights-header h2 {
+    font-size: 1.125rem;
+  }
+  
   .generate-insights-button {
     width: 100%;
+  }
+  
+  .section-header {
+    padding: 0.625rem;
+  }
+  
+  .section-header h3 {
+    font-size: 0.875rem;
+  }
+  
+  .section-content {
+    padding: 0.625rem;
+  }
+  
+  .recommendation-item {
+    padding: 0.625rem;
+  }
+  
+  .insights-analysis,
+  .insights-summary {
+    padding: 0.625rem;
+  }
+  
+  .insights-placeholder {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .expense-insights {
+    padding: 0.875rem;
+  }
+  
+  .insights-header h2 {
+    font-size: 1rem;
+  }
+  
+  .generate-insights-button {
+    font-size: 0.8125rem;
+    padding: 0.4375rem 0.875rem;
+  }
+  
+  .recommendation-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 0.75rem;
+  }
+  
+  .recommendation-text,
+  .insights-analysis,
+  .insights-summary p,
+  .insights-placeholder p {
+    font-size: 0.8125rem;
   }
 } 

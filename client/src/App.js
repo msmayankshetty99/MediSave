@@ -3,7 +3,7 @@ import Expenses from './Expenses';
 import Dashboard from './Dashboard';
 import React, { useState, useEffect, createContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { FaHeartbeat, FaSignOutAlt } from 'react-icons/fa';
+import { FaHeartbeat, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import ResetPassword from './components/ResetPassword';
@@ -15,7 +15,7 @@ import { AuthProvider, useAuth } from './AuthContext';
 export const ThemeContext = createContext();
 
 // Sidenav component with logout functionality
-function Sidenav({ theme, toggleTheme }) {
+function Sidenav({ theme, toggleTheme, isMobileOpen, setIsMobileOpen }) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -24,26 +24,44 @@ function Sidenav({ theme, toggleTheme }) {
     navigate('/login');
   };
 
+  const closeMobileMenu = () => {
+    if (window.innerWidth <= 768) {
+      setIsMobileOpen(false);
+    }
+  };
+
   return (
-    <nav className="sidenav">
+    <nav className={`sidenav ${isMobileOpen ? 'open' : ''}`}>
       <div className="sidenav-header">
         <h2><FaHeartbeat className="medisave-icon" /> MediSave</h2>
       </div>
       <ul className="sidenav-menu">
         <li>
-          <NavLink to="/expenses" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavLink 
+            to="/expenses" 
+            className={({ isActive }) => isActive ? "active" : ""}
+            onClick={closeMobileMenu}
+          >
             <span className="nav-icon">💰</span>
             Expenses
           </NavLink>
         </li>
         <li>
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavLink 
+            to="/dashboard" 
+            className={({ isActive }) => isActive ? "active" : ""}
+            onClick={closeMobileMenu}
+          >
             <span className="nav-icon">📊</span>
             Dashboard
           </NavLink>
         </li>
         <li>
-          <NavLink to="/profile" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavLink 
+            to="/profile" 
+            className={({ isActive }) => isActive ? "active" : ""}
+            onClick={closeMobileMenu}
+          >
             <span className="nav-icon">👤</span>
             Profile
           </NavLink>
@@ -75,10 +93,52 @@ function AppLayout({ theme, toggleTheme, children }) {
   const authRoutes = ['/login', '/signup', '/reset-password'];
   const showSidenav = !authRoutes.includes(location.pathname);
   const isAuthPage = authRoutes.includes(location.pathname);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileOpen(!isMobileOpen);
+  };
+
+  // Close sidebar when clicking outside
+  const handleOverlayClick = () => {
+    setIsMobileOpen(false);
+  };
+
+  // Close sidebar when window is resized to desktop size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMobileOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className={`app-container ${isAuthPage ? 'auth-page' : ''}`}>
-      {showSidenav && <Sidenav theme={theme} toggleTheme={toggleTheme} />}
+      {showSidenav && (
+        <>
+          <button 
+            className="mobile-toggle" 
+            onClick={toggleMobileMenu}
+            aria-label="Toggle navigation menu"
+          >
+            {isMobileOpen ? <FaTimes /> : <FaBars />}
+          </button>
+          <div 
+            className={`sidebar-overlay ${isMobileOpen ? 'active' : ''}`} 
+            onClick={handleOverlayClick}
+          ></div>
+          <Sidenav 
+            theme={theme} 
+            toggleTheme={toggleTheme} 
+            isMobileOpen={isMobileOpen}
+            setIsMobileOpen={setIsMobileOpen}
+          />
+        </>
+      )}
       <main className="main-content">
         {children}
       </main>

@@ -196,20 +196,41 @@ function Dashboard() {
     setSelectedCategory(categoryId);
   };
 
+  // Determine legend position based on screen width
+  const getLegendPosition = () => {
+    return window.innerWidth <= 768 ? 'bottom' : 'right';
+  };
+
+  // State to track legend position
+  const [legendPosition, setLegendPosition] = useState(getLegendPosition());
+
+  // Update legend position on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setLegendPosition(getLegendPosition());
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Chart options
   const chartOptions = {
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: true,
     plugins: {
       legend: {
-        position: 'right',
+        position: legendPosition,
+        align: 'center',
         labels: {
           color: theme === 'dark' ? '#E2E8F0' : '#1E293B',
           font: {
             family: "'Inter', sans-serif",
             size: 12
           },
-          padding: 20
+          padding: 20,
+          boxWidth: 12,
+          boxHeight: 12
         }
       },
       tooltip: {
@@ -228,6 +249,14 @@ function Dashboard() {
             return `$${value.toFixed(2)} (${percentage}%)`;
           }
         }
+      }
+    },
+    layout: {
+      padding: {
+        top: 5,
+        bottom: 5,
+        left: 5,
+        right: 5
       }
     }
   };

@@ -34,11 +34,13 @@
 .dashboard-summary {
   display: flex;
   gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 /* Summary Cards */
 .summary-card {
   flex: 1;
+  min-width: 200px;
   background-color: var(--card-background);
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px var(--shadow-color);
@@ -157,6 +159,8 @@
   box-shadow: 0 1px 3px var(--shadow-color);
   padding: 1.5rem;
   transition: background-color 0.3s;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .chart-container h2 {
@@ -169,6 +173,18 @@
 .pie-chart-container {
   height: 300px;
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+/* Ensure chart is responsive and contained */
+.pie-chart-container canvas {
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 300px !important;
 }
 
 .no-data {
@@ -197,10 +213,16 @@
 }
 
 /* Table Styles */
+.expenses-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .expenses-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  min-width: 650px;
 }
 
 .expenses-table th,
@@ -280,9 +302,17 @@
 }
 
 /* Responsive adjustments */
-@media (min-width: 768px) {
+@media (max-width: 1024px) {
   .dashboard-charts {
     grid-template-columns: 1fr;
+  }
+  
+  .summary-card {
+    min-width: 180px;
+  }
+  
+  .pie-chart-container {
+    height: 280px;
   }
 }
 
@@ -291,20 +321,101 @@
     padding: 1rem;
   }
   
+  .dashboard-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .dashboard-header p {
+    font-size: 1rem;
+  }
+  
   .dashboard-summary {
     flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .summary-card {
+    min-width: 100%;
+  }
+  
+  .card-content {
+    padding: 1.25rem;
+  }
+  
+  .summary-card .amount,
+  .summary-card .count-value {
+    font-size: 1.75rem;
+  }
+  
+  .category-filter,
+  .chart-container,
+  .recent-expenses {
+    padding: 1.25rem;
+  }
+  
+  .category-filter h3,
+  .chart-container h2,
+  .recent-expenses h2 {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
   }
   
   .filter-buttons {
-    flex-direction: column;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
   }
   
   .filter-button {
     width: 100%;
+    justify-content: center;
   }
   
   .pie-chart-container {
     height: 250px;
+  }
+  
+  .pie-chart-container canvas {
+    max-height: 250px !important;
+  }
+  
+  .expenses-table th,
+  .expenses-table td {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 0.75rem;
+  }
+  
+  .dashboard-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .dashboard-content {
+    gap: 1.5rem;
+  }
+  
+  .filter-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .pie-chart-container {
+    height: 220px;
+  }
+  
+  .chart-container {
+    padding: 1rem;
+  }
+  
+  .chart-container h2 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
   }
 } 
