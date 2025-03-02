@@ -10,6 +10,7 @@ import ResetPassword from './components/ResetPassword';
 import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './AuthContext';
+import usePageTitle from './hooks/usePageTitle';
 
 // Create a theme context
 export const ThemeContext = createContext();
@@ -94,6 +95,9 @@ function AppLayout({ theme, toggleTheme, children }) {
   const showSidenav = !authRoutes.includes(location.pathname);
   const isAuthPage = authRoutes.includes(location.pathname);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  
+  // Use the custom hook to set the page title
+  usePageTitle();
 
   const toggleMobileMenu = () => {
     setIsMobileOpen(!isMobileOpen);

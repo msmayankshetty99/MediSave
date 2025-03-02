@@ -143,11 +143,11 @@ function Expenses() {
       setEditingExpense(null);
     } else {
       // Add new expense
-      setExpensesList(prevList => [
-        ...prevList,
-        {
-          id: Date.now(),
-          name: expense.name,
+    setExpensesList(prevList => [
+      ...prevList,
+      {
+        id: Date.now(),
+        name: expense.name,
           amount: expenseAmount,
           category: expense.category,
           date: expense.date,
@@ -530,25 +530,25 @@ function Expenses() {
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="name">Description</label>
-                    <input
-                      type="text"
+            <input
+              type="text"
                       id="name"
-                      name="name"
-                      value={expense.name}
-                      onChange={handleChange}
+              name="name"
+              value={expense.name}
+              onChange={handleChange}
                       placeholder="e.g., Prescription Medicine"
                       required
-                    />
-                  </div>
+            />
+        </div>
                   
                   <div className="form-group">
                     <label htmlFor="amount">Amount ($)</label>
-                    <input
-                      type="number"
+            <input
+              type="number"
                       id="amount"
-                      name="amount"
-                      value={expense.amount}
-                      onChange={handleChange}
+              name="amount"
+              value={expense.amount}
+              onChange={handleChange}
                       placeholder="0.00"
                       step="0.01"
                       min="0"
