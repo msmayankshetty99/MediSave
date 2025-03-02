@@ -12,6 +12,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 // we should make these environment variables
 const API_KEY = "f671082f5fdbe6488ce24f306baf37a3";
+
 const ACCOUNT_ID = "67c28e049683f20dd518c023"; //we should update this eventually (make a user have to login)
 
 var request = require('superagent');

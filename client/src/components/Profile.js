@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import '../styles/profile.css';
 
+const API_KEY = "f671082f5fdbe6488ce24f306baf37a3";
+
+var request = require('superagent');
+
+
 function Profile() {
   const { user, updatePassword, error, loading } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
@@ -9,6 +14,44 @@ function Profile() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
+
+
+  const fetchCustomerID = () => {
+    //yes this is hard coded, it's because currently don't have a way to get the name
+    let first_name = "Jane";
+    let last_name = "Doe";
+
+    request.get(`http://api.nessieisreal.com/customers/accounts?key=${API_KEY}`)
+      .end(function (err, res) {
+        if (err) {
+          console.error('Error fetching data:', err);
+          return;
+        }
+
+        if (!res) {
+          console.error('No response received');
+          return;
+        }
+
+        if (res && res.status) {
+          console.log('Response Status:', res.status);
+        }
+
+        if (res && res.body) {
+          console.log('Response Body:', res.body);
+          for (let x of res.body) {
+            if (x['first_name'].lower() === first_name.lower() && x['last_name'].lower() === last_name.lower()) {
+              return x['_id'];
+            }
+          }
+        } else {
+          console.error('No body in response');
+        }
+      });
+
+    return "67c28e049683f20dd518c023";
+  };
+  
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -66,8 +109,8 @@ function Profile() {
               <p>{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p>
             </div>
             <div className="info-group">
-              <label>Last Login</label>
-              <p>{user?.last_login ? new Date(user.last_login).toLocaleDateString() : 'N/A'}</p>
+              <label>Customer ID</label>
+              <p>{fetchCustomerID() ? fetchCustomerID() : 'N/A'}</p>
             </div>
           </div>
         </div>
