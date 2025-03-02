@@ -11,6 +11,7 @@ import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './AuthContext';
 import usePageTitle from './hooks/usePageTitle';
+import ChatBox from './components/ChatBox';
 
 // Create a theme context
 export const ThemeContext = createContext();
@@ -69,6 +70,8 @@ function Sidenav({ theme, toggleTheme, isMobileOpen, setIsMobileOpen }) {
         </li>
       </ul>
       <div className="sidenav-footer">
+        <ChatBox />
+        
         <button 
           className="theme-toggle-sidenav" 
           onClick={toggleTheme}

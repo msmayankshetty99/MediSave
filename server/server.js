@@ -7,7 +7,7 @@ const { OpenAI } = require('openai');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());
@@ -457,6 +457,78 @@ app.post('/api/cheaper-alternatives', async (req, res) => {
   } catch (error) {
     console.error('Error generating alternatives:', error);
     return res.status(500).json({ error: 'Failed to generate alternatives' });
+  }
+});
+
+// Simple ping endpoint to check if server is running
+app.get('/api/ping', (req, res) => {
+  console.log('Ping request received');
+  return res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Endpoint for chat assistant
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message, chatHistory } = req.body;
+    
+    console.log('Chat request received:', { message, historyLength: chatHistory?.length || 0 });
+    
+    // Validate input
+    if (!message) {
+      console.error('No message provided');
+      return res.status(400).json({ success: false, error: 'No message provided' });
+    }
+    
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key is missing');
+      return res.status(500).json({ success: false, error: 'OpenAI API key is missing' });
+    }
+    
+    // System message to restrict the assistant to medical expenses and app functionality
+    const systemMessage = {
+      role: "system",
+      content: `You are a helpful assistant for the MediSave application, which helps users track and manage their medical expenses. 
+      
+      IMPORTANT RESTRICTIONS:
+      - Only answer questions related to medical expenses, healthcare costs, insurance, and the MediSave application functionality.
+      - If a user asks about anything outside these topics, politely redirect them to topics related to medical expenses or the app.
+      - Keep responses concise and focused, as they will be displayed in a small chat interface.
+      - The MediSave app includes features for: tracking expenses, finding alternatives for medications, viewing spending analytics on the dashboard, and managing user profiles.
+      - Never provide medical advice or diagnoses - only discuss financial aspects of healthcare.
+      
+      Your goal is to help users better understand and manage their medical expenses through the MediSave application.`
+    };
+    
+    // Format the conversation history for the API
+    const formattedMessages = [
+      systemMessage,
+      ...(chatHistory || []),
+      { role: "user", content: message }
+    ];
+    
+    console.log('Sending chat request to OpenAI...');
+    
+    // Call OpenAI API
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini", // Using the same model as other endpoints
+      messages: formattedMessages,
+      max_tokens: 150, // Limiting response length for chat interface
+      temperature: 0.7,
+    });
+    
+    console.log('Received chat response from OpenAI');
+    
+    if (response.choices && response.choices.length > 0) {
+      const content = response.choices[0].message.content;
+      return res.json({ success: true, response: content });
+    } else {
+      console.error('No response from AI');
+      return res.status(500).json({ success: false, error: 'No response from AI' });
+    }
+  } catch (error) {
+    console.error('Error in chat endpoint:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 

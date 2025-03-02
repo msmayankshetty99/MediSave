@@ -9,6 +9,7 @@ MediSave is a comprehensive medical expense tracking application that helps you 
 - Filter expenses by category
 - Search for specific expenses
 - View expense statistics and summaries
+- AI-powered chat assistant for help with medical expenses and app usage
 - Dark/light mode support
 - Responsive design for mobile and desktop
 
@@ -69,6 +70,17 @@ MediSave is a comprehensive medical expense tracking application that helps you 
    - Insurance information (if present)
 5. Review the extracted information and make any necessary adjustments
 6. Click "Add Expense" to save the expense to your list
+
+## Using the Chat Assistant
+
+The MediSave application includes an AI-powered chat assistant that can help with:
+
+1. Understanding how to use the application features
+2. Getting information about medical expenses and healthcare costs
+3. Learning about expense tracking best practices
+4. Finding alternatives for medications
+
+The chat assistant is accessible from the sidebar and uses the same OpenAI GPT-4o-mini model that powers the receipt scanner. The assistant is specifically trained to provide information related to medical expenses and the application functionality only.
 
 ## Technologies Used
 
