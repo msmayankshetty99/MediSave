@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import '../styles/profile.css';
 
@@ -6,52 +6,98 @@ const API_KEY = "f671082f5fdbe6488ce24f306baf37a3";
 
 var request = require('superagent');
 
-
 function Profile() {
   const { user, updatePassword, error, loading } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [id, setId] = useState(null);
+  const [name, setName] = useState(null);
+  const [address, setAddress] = useState(null);
   const [isError, setIsError] = useState(false);
 
+  useEffect(() => {
+    fetchCustomerID();
+  }, []);
 
-  const fetchCustomerID = () => {
-    //yes this is hard coded, it's because currently don't have a way to get the name
-    let first_name = "Jane";
-    let last_name = "Doe";
+  useEffect(() => {
+    fetchCustomerName();
+  }, []);
 
-    request.get(`http://api.nessieisreal.com/customers/accounts?key=${API_KEY}`)
+  useEffect(() => {
+    fetchCustomerAddress();
+  }, []);
+
+  const fetchCustomerName = () => {
+    let id = "67c28e049683f20dd518c023";
+
+    request.get(`http://api.nessieisreal.com/customers?key=${API_KEY}`)
       .end(function (err, res) {
         if (err) {
           console.error('Error fetching data:', err);
           return;
         }
 
-        if (!res) {
-          console.error('No response received');
-          return;
-        }
-
-        if (res && res.status) {
-          console.log('Response Status:', res.status);
-        }
-
         if (res && res.body) {
-          console.log('Response Body:', res.body);
           for (let x of res.body) {
-            if (x['first_name'].lower() === first_name.lower() && x['last_name'].lower() === last_name.lower()) {
-              return x['_id'];
+            if (x['_id'] === id) {
+              setName(x['first_name'] + ' ' + x['last_name']);
+              break;
             }
           }
         } else {
           console.error('No body in response');
         }
       });
-
-    return "67c28e049683f20dd518c023";
   };
-  
+
+  const fetchCustomerAddress = () => {
+    let id = "67c28e049683f20dd518c023";
+
+    request.get(`http://api.nessieisreal.com/customers?key=${API_KEY}`)
+      .end(function (err, res) {
+        if (err) {
+          console.error('Error fetching data:', err);
+          return;
+        }
+
+        if (res && res.body) {
+          for (let x of res.body) {
+            if (x['_id'] === id) {
+              setAddress(x['address']['street_number'] + ' ' + x['address']['street_name'] + ', ' + x['address']['city']  + ', ' + x['address']['state'] + ' ' + x['address']['zip']);
+              break;
+            }
+          }
+        } else {
+          console.error('No body in response');
+        }
+      });
+  };
+
+  const fetchCustomerID = () => {
+    let first_name = "Jane";
+    let last_name = "Doe";
+
+    request.get(`http://api.nessieisreal.com/customers?key=${API_KEY}`)
+      .end(function (err, res) {
+        if (err) {
+          console.error('Error fetching data:', err);
+          return;
+        }
+
+        if (res && res.body) {
+          for (let x of res.body) {
+            if (x['first_name'].toLowerCase() === first_name.toLowerCase() && x['last_name'].toLowerCase() === last_name.toLowerCase()) {
+              setId(x['_id']);
+              break;
+            }
+          }
+        } else {
+          console.error('No body in response');
+        }
+      });
+  };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -101,16 +147,26 @@ function Profile() {
           <h2>Account Information</h2>
           <div className="profile-info">
             <div className="info-group">
+              <label>Customer ID</label>
+              <p>{id ? id : 'N/A'}</p>
+            </div>
+            <div className="info-group">
               <label>Email</label>
               <p>{user?.email}</p>
             </div>
             <div className="info-group">
+              <label>Customer Name</label>
+              <p>{name ? name : 'N/A'}</p>
+            </div>
+
+            <div className="info-group">
+              <label>Address</label>
+              <p>{address ? address : 'N/A'}</p>
+            </div>
+            
+            <div className="info-group">
               <label>Account Created</label>
               <p>{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p>
-            </div>
-            <div className="info-group">
-              <label>Customer ID</label>
-              <p>{fetchCustomerID() ? fetchCustomerID() : 'N/A'}</p>
             </div>
           </div>
         </div>
@@ -171,4 +227,4 @@ function Profile() {
   );
 }
 
-export default Profile; 
+export default Profile;
