@@ -92,7 +92,7 @@ The chat assistant is accessible from the sidebar and uses the same OpenAI GPT-4
 
 ## License
 
-This project is licensed under the ISC License.
+This project is licensed under the MIT License.
 
 ## Acknowledgements
 
